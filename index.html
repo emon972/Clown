@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AR Business Card</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.4/dist/mindar-image-aframe.prod.js"></script>
+</head>
+
+<body style="margin:0; overflow:hidden;">
+
+<a-scene
+  mindar-image="imageTargetSrc: targets.mind;"
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false">
+
+  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+  <!-- IMAGE TARGET -->
+  <a-entity mindar-image-target="targetIndex: 0">
+
+    <!-- NAME -->
+    <a-text value="EMON"
+            position="0 0.25 0"
+            align="center"
+            color="white"
+            width="2">
+    </a-text>
+
+    <!-- TITLE -->
+    <a-text value="Creative Technologist"
+            position="0 0.1 0"
+            align="center"
+            color="yellow"
+            width="2">
+    </a-text>
+
+    <!-- CALL BUTTON -->
+    <a-plane position="0 -0.2 0"
+             width="0.9"
+             height="0.3"
+             color="#00ff88"
+             onclick="window.location.href='tel:+88018560963067'">
+    </a-plane>
+
+    <a-text value="CALL ME"
+            position="0 -0.2 0.01"
+            align="center"
+            color="black"
+            width="2">
+    </a-text>
+
+  </a-entity>
+
+</a-scene>
+
+</body>
+</html>
