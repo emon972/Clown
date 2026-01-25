@@ -137,8 +137,6 @@ def run():
 
     save_db(db)
 
-# ---------------- Run forever ----------------
-send("✅ Biconomy Listing Hunter Bot Started")
 while True:
     run()
     time.sleep(300)
