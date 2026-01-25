@@ -2,8 +2,8 @@ import requests, json, time, os
 from bs4 import BeautifulSoup
 from exchanges import EXCHANGES, KEYWORDS, TARGET_EXCHANGE
 
-BOT_TOKEN = os.getenv("BOT_TOKEN") or "PUT_TOKEN_HERE"
-CHAT_ID = os.getenv("CHAT_ID") or "PUT_CHAT_ID_HERE"
+BOT_TOKEN = os.getenv("BOT_TOKEN") or "8559731467:AAHzyC6H3JJw4wTLsXsCI2YiyM5A49Jm_fU"
+CHAT_ID = os.getenv("CHAT_ID") or "1987110638"
 DB_FILE = "token_db.json"
 
 def load_db():
