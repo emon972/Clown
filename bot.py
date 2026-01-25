@@ -19,7 +19,7 @@ def save_db(db):
 def send(msg):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
-    
+
 def coingecko_link(symbol):
     try:
         r = requests.get(
@@ -31,8 +31,8 @@ def coingecko_link(symbol):
     except:
         pass
     return "N/A"
-    
-    def extract_tokens(text):
+
+def extract_tokens(text):
     tokens = set()
     for word in text.upper().split():
         if word.isalpha() and 2 <= len(word) <= 8:
@@ -42,15 +42,13 @@ def coingecko_link(symbol):
 def pitch(token, exchange, status, count, cg):
     return f"""Hey, I’m Dominic.
 I noticed #{token} is currently trading on {exchange}.
+CoinGecko: {cg}
 
 Listing on Biconomy CEX could help you scale faster,
 especially with volume and visibility.
 
-Would you be interested in discussing listing opportunities?
-
-CG: {cg}
 Status: {status} ({count} exchanges)
-
+Would you be interested in discussing listing opportunities?
 """
 
 def run():
@@ -89,7 +87,7 @@ def run():
 
                 cg = coingecko_link(t)
 
-                msg = "🆕 NEW LISTING SIGNAL\n\n" + pitch(t, ex, status, count,cg)
+                msg = "🆕 NEW LISTING SIGNAL\n\n" + pitch(t, ex, status, count, cg)
                 send(msg)
 
         except Exception as e:
