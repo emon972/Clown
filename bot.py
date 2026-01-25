@@ -6,83 +6,95 @@ BOT_TOKEN = os.getenv("BOT_TOKEN") or "8559731467:AAHzyC6H3JJw4wTLsXsCI2YiyM5A49
 CHAT_ID = os.getenv("CHAT_ID") or "1987110638"
 DB_FILE = "token_db.json"
 
-BICONOMY_URL = "https://www.biconomy.com/exchange-listings"  # Example Biconomy listings page
+def load_db():
+    if not os.path.exists(DB_FILE):
+        return {}
+    with open(DB_FILE) as f:
+        return json.load(f)
 
-def send_telegram(msg):
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+def save_db(db):
+    with open(DB_FILE, "w") as f:
+        json.dump(db, f, indent=2)
+
+def send(msg):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
 
-def load_sent():
-    if not os.path.exists("sent_tokens.txt"):
-        return set()
-    with open("sent_tokens.txt", "r") as f:
-        return set(f.read().splitlines())
+def coingecko_link(symbol):
+    try:
+        r = requests.get(
+            f"https://api.coingecko.com/api/v3/search?query={symbol}",
+            timeout=10
+        ).json()
+        if r["coins"]:
+            return f"https://www.coingecko.com/en/coins/{r['coins'][0]['id']}"
+    except:
+        pass
+    return "N/A"
 
-def save_sent(token_key):
-    with open("sent_tokens.txt", "a") as f:
-        f.write(token_key + "\n")
+def extract_tokens(text):
+    tokens = set()
+    for word in text.upper().split():
+        if word.isalpha() and 2 <= len(word) <= 8:
+            tokens.add(word)
+    return tokens
 
-def pitch_message(token, exchange):
-    return f"""Hi, I’m Dominic.
+def pitch(token, exchange, status, count, cg):
+    return f"""Hey, I’m Dominic.
 I noticed #{token} is currently trading on {exchange}.
-Listing on Biconomy CEX could help you scale faster, especially with volume and visibility.
+CoinGecko: {cg}
+
+Listing on Biconomy CEX could help you scale faster,
+especially with volume and visibility.
+
+Status: {status} ({count} exchanges)
 Would you be interested in discussing listing opportunities?
 """
 
-def is_biconomy_listed(token):
-    try:
-        html = requests.get(BICONOMY_URL, timeout=10).text.lower()
-        return token.lower() in html
-    except:
-        return False
+def run():
+    db = load_db()
 
-def check_exchanges():
-    sent = load_sent()
-
-    for name, url in EXCHANGES.items():
+    for ex, url in EXCHANGES.items():
         try:
-            html = requests.get(url, timeout=10).text.lower()
-            for kw in KEYWORDS:
-                if kw in html:
-                    # Basic token extraction
-                    words = html.split()
-                    for w in words:
-                        if w.isupper() and 3 <= len(w) <= 8:
-                            token = w
-                            key = f"{token}_{name}"
-                            if key in sent:
-                                continue  # Already alerted
+            html = requests.get(url, timeout=10).text
+            low = html.lower()
 
-                            # Skip if token already on Biconomy
-                            if is_biconomy_listed(token):
-                                continue
+            if not any(k in low for k in KEYWORDS):
+                continue
 
-                            # Determine status
-                            status = "Recently listed" if "just listed" in html or "live now" in html else "Upcoming listing"
+            tokens = extract_tokens(html)
 
-                            # Prepare message
-                            msg = f"""🆕 Token Alert
+            for t in tokens:
+                if t not in db:
+                    db[t] = {"ex": [], "biconomy": False}
 
-Token: #{token}
-Exchange: {name}
-Status: {status}
-Biconomy: Not listed yet ✅
+                if ex not in db[t]["ex"]:
+                    db[t]["ex"].append(ex)
 
-Pitch:
-{pitch_message(token, name)}
+                # if already on biconomy → skip
+                if TARGET_EXCHANGE in db[t]["ex"]:
+                    db[t]["biconomy"] = True
+                    continue
 
-Useful Links:
-CoinMarketCap: https://coinmarketcap.com/search?q={token}
-CoinGecko: https://www.coingecko.com/en/search?query={token}
-DEX: https://dexscreener.com/search?q={token}
+                count = len(db[t]["ex"])
 
----
-"""
-                            send_telegram(msg)
-                            save_sent(key)
-        except:
-            pass
+                if count == 1:
+                    status = "Fresh"
+                elif count == 2:
+                    status = "Expansion"
+                else:
+                    status = "Scaling"
+
+                cg = coingecko_link(t)
+
+                msg = "🆕 NEW LISTING SIGNAL\n\n" + pitch(t, ex, status, count, cg)
+                send(msg)
+
+        except Exception as e:
+            print(ex, e)
+
+    save_db(db)
 
 while True:
-    check_exchanges()
-    time.sleep(300)  # Run every 5 minutes
+    run()
+    time.sleep(120)
