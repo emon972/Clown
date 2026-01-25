@@ -6,137 +6,83 @@ BOT_TOKEN = os.getenv("BOT_TOKEN") or "8559731467:AAHzyC6H3JJw4wTLsXsCI2YiyM5A49
 CHAT_ID = os.getenv("CHAT_ID") or "1987110638"
 DB_FILE = "token_db.json"
 
-FAKE_KEYWORDS = [
-    "INU", "PEPE", "DOGE", "SHIB", "ELON",
-    "BABY", "MEME", "TEST", "SCAM", "MOON"
-]
+BICONOMY_URL = "https://www.biconomy.com/exchange-listings"  # Example Biconomy listings page
 
-REFRESH_TIME = 120  # seconds
-
-# ---------------- DB ----------------
-def load_db():
-    if not os.path.exists(DB_FILE):
-        return {}
-    with open(DB_FILE) as f:
-        return json.load(f)
-
-def save_db(db):
-    with open(DB_FILE, "w") as f:
-        json.dump(db, f, indent=2)
-
-# ---------------- Telegram send ----------------
-def send(msg):
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+def send_telegram(msg):
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
 
-# ---------------- Fake token filter ----------------
-def is_fake_token(symbol):
-    s = symbol.upper()
-    if len(s) < 2 or len(s) > 10:
-        return True
-    if not re.match("^[A-Z]+$", s):
-        return True
-    for k in FAKE_KEYWORDS:
-        if k in s:
-            return True
-    return False
+def load_sent():
+    if not os.path.exists("sent_tokens.txt"):
+        return set()
+    with open("sent_tokens.txt", "r") as f:
+        return set(f.read().splitlines())
 
-# ---------------- Extract tokens from text ----------------
-def extract_tokens(text):
-    tokens = set()
-    for w in text.upper().split():
-        if w.isalpha() and 2 <= len(w) <= 10:
-            tokens.add(w)
-    return tokens
+def save_sent(token_key):
+    with open("sent_tokens.txt", "a") as f:
+        f.write(token_key + "\n")
 
-# ---------------- Get Telegram from CoinGecko ----------------
-def get_tg_from_cg(symbol):
-    try:
-        r = requests.get(f"https://api.coingecko.com/api/v3/search?query={symbol}", timeout=10).json()
-        if not r["coins"]:
-            return None
-        coin_id = r["coins"][0]["id"]
-        details = requests.get(f"https://api.coingecko.com/api/v3/coins/{coin_id}", timeout=10).json()
-        tg = details["links"].get("telegram_channel_identifier")
-        if tg:
-            return f"https://t.me/{tg}"
-    except:
-        pass
-    return None
-
-# ---------------- Get Telegram from CoinMarketCap ----------------
-def get_tg_from_cmc(symbol):
-    try:
-        headers = {"Accepts": "application/json"}
-        r = requests.get(f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/info?symbol={symbol}&CMC_PRO_API_KEY=bf50e2485bb149da946a92a1bc406a0b", headers=headers, timeout=10).json()
-        data = r.get("data", {})
-        if symbol in data:
-            links = data[symbol].get("urls", {})
-            tg_list = links.get("telegram", [])
-            if tg_list:
-                return tg_list[0]
-    except:
-        pass
-    return None
-
-# ---------------- Clean pitch message ----------------
-def pitch(token, exchange, tg_link):
-    return f"""Hey, I’m Dominic.
-
+def pitch_message(token, exchange):
+    return f"""Hi, I’m Dominic.
 I noticed #{token} is currently trading on {exchange}.
-
-Listing on Biconomy CEX could help you scale faster,
-especially with stronger volume and broader visibility.
-
+Listing on Biconomy CEX could help you scale faster, especially with volume and visibility.
 Would you be interested in discussing listing opportunities?
-
-Telegram: {tg_link}
 """
 
-# ---------------- Main loop ----------------
-def run():
-    db = load_db()
+def is_biconomy_listed(token):
+    try:
+        html = requests.get(BICONOMY_URL, timeout=10).text.lower()
+        return token.lower() in html
+    except:
+        return False
 
-    for ex, url in EXCHANGES.items():
+def check_exchanges():
+    sent = load_sent()
+
+    for name, url in EXCHANGES.items():
         try:
             html = requests.get(url, timeout=10).text.lower()
-            if not any(k in html for k in KEYWORDS):
-                continue
+            for kw in KEYWORDS:
+                if kw in html:
+                    # Basic token extraction
+                    words = html.split()
+                    for w in words:
+                        if w.isupper() and 3 <= len(w) <= 8:
+                            token = w
+                            key = f"{token}_{name}"
+                            if key in sent:
+                                continue  # Already alerted
 
-            tokens = extract_tokens(html)
+                            # Skip if token already on Biconomy
+                            if is_biconomy_listed(token):
+                                continue
 
-            for t in tokens:
+                            # Determine status
+                            status = "Recently listed" if "just listed" in html or "live now" in html else "Upcoming listing"
 
-                if is_fake_token(t):
-                    continue
+                            # Prepare message
+                            msg = f"""🆕 Token Alert
 
-                # Skip if already on Biconomy
-                if t in db and TARGET_EXCHANGE in db[t].get("ex", []):
-                    continue
+Token: #{token}
+Exchange: {name}
+Status: {status}
+Biconomy: Not listed yet ✅
 
-                tg_link = get_tg_from_cg(t) or get_tg_from_cmc(t)
-                if not tg_link:
-                    continue  # skip if no TG
+Pitch:
+{pitch_message(token, name)}
 
-                if t not in db:
-                    db[t] = {"ex": [], "sent": False}
+Useful Links:
+CoinMarketCap: https://coinmarketcap.com/search?q={token}
+CoinGecko: https://www.coingecko.com/en/search?query={token}
+DEX: https://dexscreener.com/search?q={token}
 
-                if ex not in db[t]["ex"]:
-                    db[t]["ex"].append(ex)
-
-                if db[t]["sent"]:
-                    continue
-
-                msg = pitch(t, ex, tg_link)
-                send(msg)
-                db[t]["sent"] = True
-                save_db(db)
-
-        except Exception as e:
-            print(ex, e)
-
-    save_db(db)
+---
+"""
+                            send_telegram(msg)
+                            save_sent(key)
+        except:
+            pass
 
 while True:
-    run()
-    time.sleep(300)
+    check_exchanges()
+    time.sleep(300)  # Run every 5 minutes
