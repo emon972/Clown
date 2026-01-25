@@ -19,19 +19,6 @@ def save_db(db):
 def send(msg):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
-
-def coinmarketcap_link(Tt):
-    try:
-        r = requests.get(
-            f"https://coinmarketcap.com/public-api/v1/search?keyword={symbol}",
-            timeout=10
-        ).json()
-        for c in r.get("data", {}).get("cryptoCurrencyList", []):
-            if c["symbol"].upper() == symbol.upper():
-                return f"https://coinmarketcap.com/currencies/{c['slug']}"
-    except:
-        pass
-    return "N/A"
     
 def coingecko_link(symbol):
     try:
