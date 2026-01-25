@@ -32,18 +32,6 @@ def coingecko_link(symbol):
         pass
     return "N/A"
     
-def coinmarketcap_link(symbol):
-    try:
-        r = requests.get(
-            f"https://coinmarketcap.com/public-api/v1/search?keyword={symbol}",
-            timeout=10
-        ).json()
-        for c in r.get("data", {}).get("cryptoCurrencyList", []):
-            if c["symbol"].upper() == symbol.upper():
-                return f"https://coinmarketcap.com/currencies/{c['slug']}"
-    except:
-        pass
-    return "N/A"
 
 def extract_tokens(text):
     tokens = set()
@@ -62,7 +50,6 @@ especially with volume and visibility.
 Would you be interested in discussing listing opportunities?
 
 CG: {cg}
-CMC: {cmc}
 Status: {status} ({count} exchanges)
 
 """
