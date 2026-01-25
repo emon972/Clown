@@ -32,7 +32,7 @@ def coingecko_link(symbol):
         pass
     return "N/A"
     
-    def coinmarketcap_link(symbol):
+def coinmarketcap_link(symbol):
     try:
         r = requests.get(
             f"https://coinmarketcap.com/public-api/v1/search?keyword={symbol}",
