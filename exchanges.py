@@ -17,9 +17,6 @@ KEYWORDS = [
     "trading will begin",
     "deposit open",
     "is pleased to announce"
-    "recently listed"
-    "very soon"
-    "trending"
 ]
 
 TARGET_EXCHANGE = "Biconomy"
