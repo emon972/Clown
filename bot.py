@@ -39,7 +39,7 @@ def coingecko_link(symbol):
             tokens.add(word)
     return tokens
 
-def pitch(token, exchange, status, count,cmc, cg):
+def pitch(token, exchange, status, count, cg):
     return f"""Hey, I’m Dominic.
 I noticed #{token} is currently trading on {exchange}.
 
@@ -49,7 +49,6 @@ especially with volume and visibility.
 Would you be interested in discussing listing opportunities?
 
 CG: {cg}
-CMC: {cmc}
 Status: {status} ({count} exchanges)
 
 """
@@ -89,9 +88,8 @@ def run():
                     status = "Scaling"
 
                 cg = coingecko_link(t)
-                cmc = coinmarketcap_link(Tt)
 
-                msg = "🆕 NEW LISTING SIGNAL\n\n" + pitch(t, ex, status, count,cmc,cg)
+                msg = "🆕 NEW LISTING SIGNAL\n\n" + pitch(t, ex, status, count,cg)
                 send(msg)
 
         except Exception as e:
