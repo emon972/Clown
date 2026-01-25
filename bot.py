@@ -20,18 +20,6 @@ def send(msg):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
 
-def coingecko_link(symbol):
-    try:
-        r = requests.get(
-            f"https://api.coingecko.com/api/v3/search?query={symbol}",
-            timeout=10
-        ).json()
-        if r["coins"]:
-            return f"https://www.coingecko.com/en/coins/{r['coins'][0]['id']}"
-    except:
-        pass
-    return "N/A"
-    
 def coinmarketcap_link(Tt):
     try:
         r = requests.get(
@@ -45,8 +33,19 @@ def coinmarketcap_link(Tt):
         pass
     return "N/A"
     
-
-def extract_tokens(text):
+def coingecko_link(symbol):
+    try:
+        r = requests.get(
+            f"https://api.coingecko.com/api/v3/search?query={symbol}",
+            timeout=10
+        ).json()
+        if r["coins"]:
+            return f"https://www.coingecko.com/en/coins/{r['coins'][0]['id']}"
+    except:
+        pass
+    return "N/A"
+    
+    def extract_tokens(text):
     tokens = set()
     for word in text.upper().split():
         if word.isalpha() and 2 <= len(word) <= 8:
