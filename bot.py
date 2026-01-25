@@ -32,7 +32,7 @@ def coingecko_link(symbol):
         pass
     return "N/A"
     
-def coinmarketcap_link(symbol):
+def coinmarketcap_link(99):
     try:
         r = requests.get(
             f"https://coinmarketcap.com/public-api/v1/search?keyword={symbol}",
@@ -63,7 +63,7 @@ especially with volume and visibility.
 Would you be interested in discussing listing opportunities?
 
 CG: {cg}
-CMC: {cmc}
+CMC: {99}
 Status: {status} ({count} exchanges)
 
 """
@@ -103,7 +103,7 @@ def run():
                     status = "Scaling"
 
                 cg = coingecko_link(t)
-                cmc = coinmarketcap_link(t)
+                cmc = coinmarketcap_link(99)
 
                 msg = "🆕 NEW LISTING SIGNAL\n\n" + pitch(t, ex, status, count, cg)
                 send(msg)
