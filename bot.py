@@ -68,7 +68,7 @@ def get_tg_from_cg(symbol):
 def get_tg_from_cmc(symbol):
     try:
         headers = {"Accepts": "application/json"}
-        r = requests.get(f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/info?symbol={symbol}&CMC_PRO_API_KEY=YOUR_CMC_API_KEY", headers=headers, timeout=10).json()
+        r = requests.get(f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/info?symbol={symbol}&CMC_PRO_API_KEY=bf50e2485bb149da946a92a1bc406a0b", headers=headers, timeout=10).json()
         data = r.get("data", {})
         if symbol in data:
             links = data[symbol].get("urls", {})
