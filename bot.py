@@ -41,14 +41,14 @@ def extract_tokens(text):
 
 def pitch(token, exchange, status, count, cg):
     return f"""Hey, I’m Dominic.
-I noticed #{token} is currently trading on {exchange}.
-CoinGecko: {cg}
+I noticed #{token} is currently got listed on {exchange}.
 
 Listing on Biconomy CEX could help you scale faster,
 especially with volume and visibility.
-
-Status: {status} ({count} exchanges)
 Would you be interested in discussing listing opportunities?
+
+CoinGecko: {cg}
+Status: {status} ({count} exchanges)
 """
 
 def run():
