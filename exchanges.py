@@ -1,5 +1,4 @@
 EXCHANGES = {
-    "BitMart": "https://support.bmx.fund/hc/en-us/categories/360000132534",
     "LBank": "https://www.lbank.com/support/announcement",
     "XT": "https://www.xt.com/en/support/announcement",
     "AscendEX": "https://ascendex.com/en/support/articles",
