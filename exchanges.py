@@ -19,3 +19,15 @@ KEYWORDS = [
 ]
 
 TARGET_EXCHANGE = "Biconomy"
+
+# Tier-1 exchanges to ignore
+TIER1_EXCHANGES = [
+    "binance",
+    "coinbase",
+    "kraken",
+    "kucoin",
+    "okx",
+    "bybit",
+    "bitfinex",
+    "gate.io"
+]
